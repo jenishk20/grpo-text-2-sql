@@ -126,8 +126,10 @@ def main() -> None:
         gradient_checkpointing_kwargs={"use_reentrant": False},
         bf16=grpo_cfg.get("bf16", True),
         # GRPO rollout / loss
+        # NOTE: TRL 1.5.1 has no `max_prompt_length` on GRPOConfig — we instead
+        # pre-filter over-long prompts in build_dataset() (see max_prompt_tokens
+        # below), so nothing is silently truncated.
         num_generations=grpo_cfg.get("num_generations", 8),
-        max_prompt_length=grpo_cfg["max_prompt_length"],
         max_completion_length=grpo_cfg.get("max_completion_length", 512),
         temperature=grpo_cfg.get("temperature", 0.9),
         top_p=grpo_cfg.get("top_p", 1.0),
@@ -137,6 +139,10 @@ def main() -> None:
         use_vllm=grpo_cfg.get("use_vllm", True),
         vllm_mode=grpo_cfg.get("vllm_mode", "colocate"),
         vllm_gpu_memory_utilization=grpo_cfg.get("vllm_gpu_memory_utilization", 0.35),
+        vllm_max_model_length=grpo_cfg.get(
+            "vllm_max_model_length",
+            grpo_cfg["max_prompt_length"] + grpo_cfg.get("max_completion_length", 512),
+        ),
         # logging / checkpointing
         logging_steps=grpo_cfg.get("logging_steps", 1),
         save_steps=grpo_cfg.get("save_steps", 100),
@@ -152,6 +158,7 @@ def main() -> None:
         reward_funcs=[reward_fn],
         args=grpo_config,
         train_dataset=train_ds,
+        processing_class=tokenizer,   # TRL 1.5.1 arg name (was `tokenizer`)
         peft_config=peft_config,
     )
 

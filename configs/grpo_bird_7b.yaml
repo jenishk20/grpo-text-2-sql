@@ -30,8 +30,12 @@ grpo:
 
   # --- group rollouts ---
   num_generations: 8            # G completions per prompt
+  # TRL 1.5.1 has no max_prompt_length on GRPOConfig. We use this value to
+  # pre-filter over-long prompts in build_dataset() and to size the vLLM engine.
   max_prompt_length: 4096       # H200 fits full BIRD schemas (was 1536 on A10G)
   max_completion_length: 512    # SQL is short
+  # vLLM engine context window. Defaults to max_prompt_length + max_completion_length.
+  vllm_max_model_length: 4608
   temperature: 0.9              # exploration during rollouts
   top_p: 1.0
 
@@ -51,6 +55,9 @@ grpo:
   gradient_checkpointing: true
 
   # --- vLLM rollouts (colocate: train + generate share the one H200) ---
+  # NOTE: TRL 1.5.1 officially supports vLLM 0.12-0.18; this env has 0.22. If
+  # colocate errors during vLLM init/weight-sync, set use_vllm: false to fall
+  # back to (slower) HF generation and unblock training.
   use_vllm: true
   vllm_mode: colocate
   vllm_gpu_memory_utilization: 0.35   # leave the rest for training; tune if OOM
