@@ -89,7 +89,7 @@ Expected cluster paths (from your `/scratch/phalle.y` layout):
 |------|------|
 | SFT adapter | `/scratch/phalle.y/bird_sft_adapter_7b/final_adapter` |
 | BIRD train json | `/scratch/phalle.y/bird_train/train/train.json` |
-| BIRD train DBs | `/scratch/phalle.y/bird_train/train/train_databases/train_databases` |
+| BIRD train DBs | `/scratch/phalle.y/bird_train/train/train_databases` |
 | BIRD dev json | `/scratch/phalle.y/bird_dev/dev_20240627/dev.json` |
 | BIRD dev DBs | `/scratch/phalle.y/bird_dev/dev_20240627/dev_databases` |
 | Merged SFT (created in step 1) | `/scratch/phalle.y/sft_merged_7b` |
@@ -120,7 +120,7 @@ Validates paths, schema loading, the executor, and the reward on real examples.
 ```bash
 python scripts/check_setup.py \
   --train-json /scratch/phalle.y/bird_train/train/train.json \
-  --db-root    /scratch/phalle.y/bird_train/train/train_databases/train_databases \
+  --db-root    /scratch/phalle.y/bird_train/train/train_databases \
   --n 5
 ```
 Expect `reward(gold)=1.00` and a lower `reward(wrong)` for each probe.

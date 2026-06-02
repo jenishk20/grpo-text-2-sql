@@ -13,8 +13,8 @@ data:
   #       --out /scratch/phalle.y/bird_train/train/train.json
   train_json: /scratch/phalle.y/bird_train/train/train.json
   # Directory of per-db folders: {db_root}/{db_id}/{db_id}.sqlite — used by the
-  # reward to EXECUTE SQL. Verify the nesting (it may be .../train_databases).
-  db_root: /scratch/phalle.y/bird_train/train/train_databases/train_databases
+  # reward to EXECUTE SQL. (Confirmed single-level: holds address/, airline/, ...)
+  db_root: /scratch/phalle.y/bird_train/train/train_databases
   # auto = use the embedded HF `schema` field (matches SFT) if present, else read
   # the local DB; "db" = always read local DB; "embedded" = require HF schema.
   schema_source: auto
