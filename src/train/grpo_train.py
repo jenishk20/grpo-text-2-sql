@@ -57,11 +57,17 @@ def main() -> None:
                         help="Subset train set (quick runs)")
     parser.add_argument("--resume", action="store_true",
                         help="Resume from last checkpoint in output_dir")
+    parser.add_argument("--no-vllm", action="store_true",
+                        help="Disable vLLM rollouts (use HF generation). Needed "
+                             "when vLLM can't run on this driver/CUDA.")
     args = parser.parse_args()
 
     cfg = apply_overrides(load_config(args.config), args)
     model_cfg, data_cfg = cfg["model"], cfg["data"]
     reward_cfg, lora_cfg, grpo_cfg = cfg["reward"], cfg["lora"], cfg["grpo"]
+    if args.no_vllm:
+        grpo_cfg["use_vllm"] = False
+        print("[grpo] vLLM disabled (--no-vllm): using HF generation for rollouts")
 
     model_path = model_cfg["path"]
     print(f"[grpo] policy model: {model_path}")
