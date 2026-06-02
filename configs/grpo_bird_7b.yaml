@@ -1,0 +1,71 @@
+# GRPO config — Qwen2.5-Coder-7B on BIRD (single H200 80GB).
+# Paths here are the cluster defaults; override on the CLI if they move.
+
+model:
+  # Merged SFT model produced by `python -m src.train.merge_adapter`.
+  # (NOT the raw base — GRPO must start from the SFT checkpoint.)
+  path: /scratch/phalle.y/sft_merged_7b
+
+data:
+  train_json: /scratch/phalle.y/bird_train/train/train.json
+  db_root: /scratch/phalle.y/bird_train/train/train_databases/train_databases
+  sample_rows: 0          # >0 appends N example rows per table into the schema
+  max_train_samples: null # set an int for quick runs; null = full train set
+
+reward:
+  binary: false           # false = layered (format/exec/correct); true = strict 0/1
+  timeout: 30.0           # seconds per SQL execution
+  w_format: 0.1           # credit for emitting extractable SQL
+  w_exec: 0.1             # additional credit for SQL that runs without error
+  correct_reward: 1.0     # result set matches gold
+
+lora:
+  r: 32                   # matches the SFT adapter rank
+  alpha: 64
+  dropout: 0.05
+  target_modules: all-linear
+
+grpo:
+  output_dir: /scratch/phalle.y/results_bird_grpo_7b
+
+  # --- group rollouts ---
+  num_generations: 8            # G completions per prompt
+  max_prompt_length: 4096       # H200 fits full BIRD schemas (was 1536 on A10G)
+  max_completion_length: 512    # SQL is short
+  temperature: 0.9              # exploration during rollouts
+  top_p: 1.0
+
+  # --- batch / optimization ---
+  # global batch = per_device * grad_accum * n_gpus must be divisible by num_generations
+  # here: 8 * 4 * 1 = 32  ->  32 / 8 = 4 unique prompts per step
+  per_device_train_batch_size: 8
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-5
+  lr_scheduler_type: cosine
+  warmup_ratio: 0.03
+  num_train_epochs: 1
+  max_steps: -1                 # -1 = use epochs; set an int to cap steps
+  beta: 0.04                    # KL coefficient (lower = drift further from SFT)
+  scale_rewards: true
+  bf16: true
+  gradient_checkpointing: true
+
+  # --- vLLM rollouts (colocate: train + generate share the one H200) ---
+  use_vllm: true
+  vllm_mode: colocate
+  vllm_gpu_memory_utilization: 0.35   # leave the rest for training; tune if OOM
+
+  # --- logging / checkpoints ---
+  logging_steps: 1
+  save_steps: 100
+  save_total_limit: 3
+  log_completions: true
+  seed: 42
+
+# Weights & Biases. When enabled, training logs reward/loss/KL/completions.
+# `wandb login` once on the login node, or set WANDB_API_KEY in the SLURM script.
+wandb:
+  enabled: true
+  project: bird-grpo-7b
+  entity: null                  # your wandb user/team, or null for default
+  run_name: grpo-bird-7b

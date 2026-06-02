@@ -1,0 +1,21 @@
+# GRPO text-to-SQL — Python 3.10+ (cluster: py310env / sql-agent-rl-env).
+#
+# TRL <-> vLLM <-> transformers versions are tightly coupled. The pins below
+# are a known-good GRPO-with-colocate-vLLM combination; if your cluster image
+# already has a working torch/vLLM, install the rest and adjust to match rather
+# than forcing a torch reinstall.
+
+# Install torch matching your CUDA build first, e.g.:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124
+torch>=2.5.0
+
+trl>=0.16.0            # GRPOTrainer with vllm_mode="colocate"
+transformers>=4.51.0
+peft>=0.14.0
+accelerate>=1.4.0
+datasets>=3.2.0
+vllm>=0.8.0            # fast group rollouts
+bitsandbytes>=0.45.0  # optional; only if you switch to 4-bit loading
+
+pyyaml>=6.0
+wandb>=0.18.0          # training + eval dashboards

@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+myenv/
+py310env/
+
+# Training / eval artifacts
+results/
+checkpoints/
+*.out
+*.err
+wandb/
+
+# Data + model weights (live on the cluster, not in git)
+data/
+*.sqlite
+*.safetensors
+*.bin
+
+# Env / editor
+.env
+.DS_Store
+.idea/
+.vscode/
