@@ -14,20 +14,23 @@
 source activate /scratch/phalle.y/py310env
 cd /scratch/phalle.y/grpo-text-2-sql
 
+# Keep ALL caches off $HOME (your home quota is full). XDG_CACHE_HOME is the
+# catch-all so stray ~/.cache writes also land on scratch.
 export HF_HOME=/scratch/phalle.y/hf_cache
-export TRANSFORMERS_CACHE=/scratch/phalle.y/hf_cache
 export TORCH_HOME=/scratch/phalle.y/torch_cache
 export TRITON_CACHE_DIR=/scratch/phalle.y/triton_cache
 export PIP_CACHE_DIR=/scratch/phalle.y/pip_cache
+export XDG_CACHE_HOME=/scratch/phalle.y/.cache
 
-# --- Weights & Biases ---
-# Preferred: run `wandb login` once on the login node (writes ~/.netrc).
-# Otherwise export your key here:
-# export WANDB_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxx
-# If the compute nodes have no internet, log offline and `wandb sync` later:
-# export WANDB_MODE=offline
+# --- Weights & Biases (no ~/.netrc; auth via API key, config off $HOME) ---
+# `wandb login` fails when HOME is full. Instead store your key once:
+#   echo 'YOUR_WANDB_KEY' > /scratch/phalle.y/.wandb_key && chmod 600 /scratch/phalle.y/.wandb_key
+export WANDB_API_KEY=$(cat /scratch/phalle.y/.wandb_key 2>/dev/null)
 export WANDB_DIR=/scratch/phalle.y/wandb
 export WANDB_CACHE_DIR=/scratch/phalle.y/wandb_cache
+export WANDB_CONFIG_DIR=/scratch/phalle.y/wandb_config
+# If compute nodes have no internet: log offline, then `wandb sync` from login.
+# export WANDB_MODE=offline
 
 PYTHONUNBUFFERED=1 python -m src.train.grpo_train \
     --config configs/grpo_bird_7b.yaml \

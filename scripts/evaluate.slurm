@@ -13,13 +13,16 @@
 source activate /scratch/phalle.y/py310env
 cd /scratch/phalle.y/grpo-text-2-sql
 
+# Keep all caches off $HOME (home quota is full).
 export HF_HOME=/scratch/phalle.y/hf_cache
-export TRANSFORMERS_CACHE=/scratch/phalle.y/hf_cache
 export TORCH_HOME=/scratch/phalle.y/torch_cache
 export TRITON_CACHE_DIR=/scratch/phalle.y/triton_cache
 export PIP_CACHE_DIR=/scratch/phalle.y/pip_cache
+export XDG_CACHE_HOME=/scratch/phalle.y/.cache
+export WANDB_API_KEY=$(cat /scratch/phalle.y/.wandb_key 2>/dev/null)
 export WANDB_DIR=/scratch/phalle.y/wandb
 export WANDB_CACHE_DIR=/scratch/phalle.y/wandb_cache
+export WANDB_CONFIG_DIR=/scratch/phalle.y/wandb_config
 # export WANDB_MODE=offline      # if compute nodes have no internet
 
 PYTHONUNBUFFERED=1 python -m src.eval.evaluate \

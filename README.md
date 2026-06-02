@@ -66,8 +66,10 @@ cd grpo-text-2-sql
 source activate /scratch/phalle.y/py310env
 pip install -r requirements.txt
 
-# W&B: log in once on the login node (writes ~/.netrc, read by compute jobs)
-wandb login
+# W&B auth WITHOUT writing to $HOME (home quota is full -> `wandb login` fails):
+echo 'YOUR_WANDB_API_KEY' > /scratch/phalle.y/.wandb_key && chmod 600 /scratch/phalle.y/.wandb_key
+# the SLURM scripts read this file into WANDB_API_KEY and point all wandb
+# config/cache dirs at /scratch.
 ```
 
 > **Version note:** TRL ↔ vLLM ↔ transformers are tightly coupled. If your env
@@ -155,10 +157,13 @@ wandb:
 - **Eval** logs `dev/result_accuracy`, `dev/execution_accuracy`, and per-
   difficulty accuracy to the same project (`--wandb-project` in
   [scripts/evaluate.slurm](scripts/evaluate.slurm)).
-- **Auth:** `wandb login` once on the login node, or set `WANDB_API_KEY` in the
-  SLURM script. If compute nodes have no internet, uncomment
-  `export WANDB_MODE=offline` and run `wandb sync /scratch/phalle.y/wandb/<run>`
-  afterwards. Set `wandb.enabled: false` to disable entirely.
+- **Auth (HOME-quota-safe):** `wandb login` writes `~/.netrc` and fails when
+  HOME is full. Instead drop your key in `/scratch/phalle.y/.wandb_key`; the
+  SLURM scripts load it into `WANDB_API_KEY` and redirect `WANDB_DIR`,
+  `WANDB_CACHE_DIR`, and `WANDB_CONFIG_DIR` to `/scratch`. If compute nodes have
+  no internet, uncomment `export WANDB_MODE=offline` and run
+  `wandb sync /scratch/phalle.y/wandb/<run>` later. Set `wandb.enabled: false`
+  to disable entirely.
 
 ## The reward (`src/rewards/sql_reward.py`)
 

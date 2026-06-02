@@ -7,15 +7,16 @@ venv/
 myenv/
 py310env/
 
-# Training / eval artifacts
-results/
-checkpoints/
+# Training / eval artifacts (anchored to repo root with leading /, so they do
+# NOT match source packages like src/data — that mistake hid src/data/ from git)
+/results/
+/checkpoints/
+/data/
+/wandb/
 *.out
 *.err
-wandb/
 
-# Data + model weights (live on the cluster, not in git)
-data/
+# Model weights (live on the cluster, not in git)
 *.sqlite
 *.safetensors
 *.bin
