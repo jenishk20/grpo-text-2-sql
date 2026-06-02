@@ -99,9 +99,23 @@ Expected cluster paths (from your `/scratch/phalle.y` layout):
 
 ## Run the pipeline
 
-### 0. Pre-flight (login node, no GPU)
+### 0a. Build train.json from HuggingFace (login node, needs internet)
+The BIRD train *questions* come from [`xu3kev/BIRD-SQL-data-train`](https://huggingface.co/datasets/xu3kev/BIRD-SQL-data-train)
+(`db_id`, `question`, `evidence`, `SQL`, pre-extracted `schema`). Export it once
+to a local JSON so the GPU jobs never need network access:
+
+```bash
+export HF_HOME=/scratch/phalle.y/hf_cache
+python -m src.data.export_hf_to_json \
+  --dataset xu3kev/BIRD-SQL-data-train \
+  --out /scratch/phalle.y/bird_train/train/train.json
+```
+The local `train_databases/` are still required — the reward *executes* SQL
+against them (the dataset only ships schema text, not DB files).
+
+### 0b. Pre-flight (login node, no GPU)
 Validates paths, schema loading, the executor, and the reward on real examples.
-**Always run this first** — it's free and catches 90% of "wasted a GPU job" bugs.
+**Always run this** — it's free and catches 90% of "wasted a GPU job" bugs.
 
 ```bash
 python scripts/check_setup.py \

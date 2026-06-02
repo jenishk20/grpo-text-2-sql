@@ -7,8 +7,17 @@ model:
   path: /scratch/phalle.y/sft_merged_7b
 
 data:
+  # Built once on the login node from HuggingFace (xu3kev/BIRD-SQL-data-train):
+  #   export HF_HOME=/scratch/phalle.y/hf_cache
+  #   python -m src.data.export_hf_to_json \
+  #       --out /scratch/phalle.y/bird_train/train/train.json
   train_json: /scratch/phalle.y/bird_train/train/train.json
+  # Directory of per-db folders: {db_root}/{db_id}/{db_id}.sqlite — used by the
+  # reward to EXECUTE SQL. Verify the nesting (it may be .../train_databases).
   db_root: /scratch/phalle.y/bird_train/train/train_databases/train_databases
+  # auto = use the embedded HF `schema` field (matches SFT) if present, else read
+  # the local DB; "db" = always read local DB; "embedded" = require HF schema.
+  schema_source: auto
   sample_rows: 0          # >0 appends N example rows per table into the schema
   max_train_samples: null # set an int for quick runs; null = full train set
 

@@ -86,6 +86,7 @@ def main() -> None:
     train_ds = build_dataset(
         json_path=data_cfg["train_json"],
         db_root=data_cfg["db_root"],
+        schema_source=data_cfg.get("schema_source", "auto"),
         tokenizer=tokenizer,
         max_prompt_tokens=grpo_cfg["max_prompt_length"],
         sample_rows=data_cfg.get("sample_rows", 0),
