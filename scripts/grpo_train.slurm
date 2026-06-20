@@ -11,7 +11,10 @@
 # GRPO training. Checkpoints every save_steps; --resume continues from the last
 # checkpoint, so re-submit after a wall-clock timeout to keep going.
 
-source activate /scratch/phalle.y/py310env
+# Fresh CUDA-12 venv (torch 2.6+cu124 / vllm 0.8.5 / trl 0.17) — matches the
+# 12.8 driver. Swap back to `source activate /scratch/phalle.y/py310env` only
+# if you fix that conda env instead.
+source /scratch/phalle.y/grpo_venv/bin/activate
 cd /scratch/phalle.y/grpo-text-2-sql
 
 # Keep ALL caches off $HOME (your home quota is full). XDG_CACHE_HOME is the
@@ -32,10 +35,8 @@ export WANDB_CONFIG_DIR=/scratch/phalle.y/wandb_config
 # If compute nodes have no internet: log offline, then `wandb sync` from login.
 # export WANDB_MODE=offline
 
-# --no-vllm: this cluster's driver is CUDA 12.8, but vLLM 0.22 is a CUDA-13
-# build that can't run here — so rollouts use HF generation (slower but works).
-# Remove --no-vllm once a cu12 vLLM (<=0.18) is installed.
+# vLLM works in the cu12 venv, so we use fast colocate rollouts (no --no-vllm).
+# If vLLM ever fails to init, add `--no-vllm` to fall back to HF generation.
 PYTHONUNBUFFERED=1 python -m src.train.grpo_train \
     --config configs/grpo_bird_7b.yaml \
-    --no-vllm \
     --resume

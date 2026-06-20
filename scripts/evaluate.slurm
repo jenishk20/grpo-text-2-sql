@@ -10,7 +10,7 @@
 #SBATCH --error=/scratch/phalle.y/bird_grpo_eval_%j.err
 # Evaluate the trained GRPO adapter on the BIRD dev set (execution accuracy).
 
-source activate /scratch/phalle.y/py310env
+source /scratch/phalle.y/grpo_venv/bin/activate
 cd /scratch/phalle.y/grpo-text-2-sql
 
 # Keep all caches off $HOME (home quota is full).

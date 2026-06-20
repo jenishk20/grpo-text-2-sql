@@ -119,46 +119,55 @@ def main() -> None:
         task_type="CAUSAL_LM",
     )
 
-    grpo_config = GRPOConfig(
-        output_dir=grpo_cfg["output_dir"],
+    # All hyperparameters we'd like to set. GRPOConfig field names drift across
+    # TRL versions (e.g. `max_prompt_length`, `vllm_mode`, `vllm_max_model_length`
+    # come and go), so we build the full dict then keep only the fields THIS
+    # installed TRL accepts. That makes the script portable across TRL versions.
+    desired = {
+        "output_dir": grpo_cfg["output_dir"],
         # optimization
-        learning_rate=grpo_cfg.get("learning_rate", 1e-5),
-        lr_scheduler_type=grpo_cfg.get("lr_scheduler_type", "cosine"),
-        warmup_ratio=grpo_cfg.get("warmup_ratio", 0.03),
-        num_train_epochs=grpo_cfg.get("num_train_epochs", 1),
-        max_steps=grpo_cfg.get("max_steps", -1),
-        per_device_train_batch_size=grpo_cfg.get("per_device_train_batch_size", 8),
-        gradient_accumulation_steps=grpo_cfg.get("gradient_accumulation_steps", 4),
-        gradient_checkpointing=grpo_cfg.get("gradient_checkpointing", True),
-        gradient_checkpointing_kwargs={"use_reentrant": False},
-        bf16=grpo_cfg.get("bf16", True),
+        "learning_rate": grpo_cfg.get("learning_rate", 1e-5),
+        "lr_scheduler_type": grpo_cfg.get("lr_scheduler_type", "cosine"),
+        "warmup_ratio": grpo_cfg.get("warmup_ratio", 0.03),
+        "num_train_epochs": grpo_cfg.get("num_train_epochs", 1),
+        "max_steps": grpo_cfg.get("max_steps", -1),
+        "per_device_train_batch_size": grpo_cfg.get("per_device_train_batch_size", 8),
+        "gradient_accumulation_steps": grpo_cfg.get("gradient_accumulation_steps", 4),
+        "gradient_checkpointing": grpo_cfg.get("gradient_checkpointing", True),
+        "gradient_checkpointing_kwargs": {"use_reentrant": False},
+        "bf16": grpo_cfg.get("bf16", True),
         # GRPO rollout / loss
-        # NOTE: TRL 1.5.1 has no `max_prompt_length` on GRPOConfig — we instead
-        # pre-filter over-long prompts in build_dataset() (see max_prompt_tokens
-        # below), so nothing is silently truncated.
-        num_generations=grpo_cfg.get("num_generations", 8),
-        max_completion_length=grpo_cfg.get("max_completion_length", 512),
-        temperature=grpo_cfg.get("temperature", 0.9),
-        top_p=grpo_cfg.get("top_p", 1.0),
-        beta=grpo_cfg.get("beta", 0.04),
-        scale_rewards=grpo_cfg.get("scale_rewards", True),
+        "num_generations": grpo_cfg.get("num_generations", 8),
+        "max_prompt_length": grpo_cfg.get("max_prompt_length"),
+        "max_completion_length": grpo_cfg.get("max_completion_length", 512),
+        "temperature": grpo_cfg.get("temperature", 0.9),
+        "top_p": grpo_cfg.get("top_p", 1.0),
+        "beta": grpo_cfg.get("beta", 0.04),
+        "scale_rewards": grpo_cfg.get("scale_rewards", True),
         # vLLM rollouts (colocate: one GPU shared by train + generate)
-        use_vllm=grpo_cfg.get("use_vllm", True),
-        vllm_mode=grpo_cfg.get("vllm_mode", "colocate"),
-        vllm_gpu_memory_utilization=grpo_cfg.get("vllm_gpu_memory_utilization", 0.35),
-        vllm_max_model_length=grpo_cfg.get(
+        "use_vllm": grpo_cfg.get("use_vllm", True),
+        "vllm_mode": grpo_cfg.get("vllm_mode", "colocate"),
+        "vllm_gpu_memory_utilization": grpo_cfg.get("vllm_gpu_memory_utilization", 0.35),
+        "vllm_max_model_length": grpo_cfg.get(
             "vllm_max_model_length",
             grpo_cfg["max_prompt_length"] + grpo_cfg.get("max_completion_length", 512),
         ),
         # logging / checkpointing
-        logging_steps=grpo_cfg.get("logging_steps", 1),
-        save_steps=grpo_cfg.get("save_steps", 100),
-        save_total_limit=grpo_cfg.get("save_total_limit", 3),
-        log_completions=grpo_cfg.get("log_completions", True),
-        report_to=report_to,
-        run_name=run_name,
-        seed=grpo_cfg.get("seed", 42),
-    )
+        "logging_steps": grpo_cfg.get("logging_steps", 1),
+        "save_steps": grpo_cfg.get("save_steps", 100),
+        "save_total_limit": grpo_cfg.get("save_total_limit", 3),
+        "log_completions": grpo_cfg.get("log_completions", True),
+        "report_to": report_to,
+        "run_name": run_name,
+        "seed": grpo_cfg.get("seed", 42),
+    }
+    import dataclasses
+    valid_fields = {f.name for f in dataclasses.fields(GRPOConfig)}
+    kept = {k: v for k, v in desired.items() if k in valid_fields and v is not None}
+    dropped = sorted(set(desired) - set(kept))
+    if dropped:
+        print(f"[grpo] note: this TRL version ignores these config fields: {dropped}")
+    grpo_config = GRPOConfig(**kept)
 
     trainer = GRPOTrainer(
         model=model_path,
