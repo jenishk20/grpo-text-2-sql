@@ -34,8 +34,10 @@ export WANDB_CONFIG_DIR=/scratch/phalle.y/wandb_config
 # If compute nodes have no internet: log offline, then `wandb sync` from login.
 # export WANDB_MODE=offline
 
-# vLLM works in the cu12 venv, so we use fast colocate rollouts (no --no-vllm).
-# If vLLM ever fails to init, add `--no-vllm` to fall back to HF generation.
+# --no-vllm: vLLM 0.8.5 + TRL 0.17 misfire on platform detection (vllm_ascend
+# import crash), so we use HF generation for rollouts — slower but reliable.
+# Drop --no-vllm only once a TRL/vLLM pairing that imports cleanly is in place.
 PYTHONUNBUFFERED=1 python -m src.train.grpo_train \
     --config configs/grpo_bird_7b.yaml \
+    --no-vllm \
     --resume

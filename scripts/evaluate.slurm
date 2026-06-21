@@ -26,7 +26,7 @@ export WANDB_CONFIG_DIR=/scratch/phalle.y/wandb_config
 # export WANDB_MODE=offline      # if compute nodes have no internet
 
 PYTHONUNBUFFERED=1 python -m src.eval.evaluate \
-    --backend vllm \
+    --backend hf \
     --model    /scratch/phalle.y/sft_merged_7b \
     --adapter  /scratch/phalle.y/results_bird_grpo_7b/final \
     --dev-json /scratch/phalle.y/bird_dev/dev_20240627/dev.json \
