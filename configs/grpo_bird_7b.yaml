@@ -57,7 +57,7 @@ grpo:
   lr_scheduler_type: cosine
   warmup_ratio: 0.03
   num_train_epochs: 1
-  max_steps: -1                 # -1 = use epochs; set an int to cap steps
+  max_steps: 300                # capped first run; set to -1 for a full epoch
   beta: 0.04                    # KL coefficient (lower = drift further from SFT)
   scale_rewards: true
   bf16: true
