@@ -11,10 +11,9 @@
 # GRPO training. Checkpoints every save_steps; --resume continues from the last
 # checkpoint, so re-submit after a wall-clock timeout to keep going.
 
-# Fresh CUDA-12 venv (torch 2.6+cu124 / vllm 0.8.5 / trl 0.17) — matches the
-# 12.8 driver. Swap back to `source activate /scratch/phalle.y/py310env` only
-# if you fix that conda env instead.
-source /scratch/phalle.y/grpo_venv/bin/activate
+# Fresh CUDA-12 conda env (torch 2.6+cu124 / vllm 0.8.5 / trl 0.17) — matches
+# the 12.8 driver. It's a conda env, so activate with `source activate <path>`.
+source activate /scratch/phalle.y/grpo_venv
 cd /scratch/phalle.y/grpo-text-2-sql
 
 # Keep ALL caches off $HOME (your home quota is full). XDG_CACHE_HOME is the
